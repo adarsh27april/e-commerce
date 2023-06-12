@@ -6,7 +6,8 @@ const connectDatabase = () => {
       .then((data) => {
          let { host, port, name } = data.connection
          console.log(`mongodb connected with server: ${host}:${port}/${name}`);
-      }).catch(e => console.log(e))
+      })
+   // .catch(e => console.log(e))
 }
 
 module.exports = connectDatabase;
