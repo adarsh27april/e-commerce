@@ -10,6 +10,6 @@ productRouter.route('/product/:id')
    .put(updateProduct)
    .delete(deleteProduct)
    .get(getProductDetails)
-// since the url will be same for delete & update product.
+// ∵ the url will be same for delete & update product.
 
 module.exports = productRouter;

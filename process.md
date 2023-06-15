@@ -229,3 +229,123 @@ write the if block in the middleware in `error.js` like :
 ```
 
 # Search Filter Pagination
+
+1. create file `apiFeatures.js` in `utils` folder. Create class `API_Features`.
+
+2. create constructor like : 
+   
+   ```js
+   constructor(query, queryStr) {
+         this.query = query;
+         this.queryStr = queryStr;
+      }
+   ```
+
+## Search Feature
+
+The query contains the function to be performed on it. and the queryStr contains the query string present after ? in the url. ex: http://localhost:9876/api/v1/products?keyword=samosa then queryString is `keyword=samosa` 
+
+1. The Search function will have functionality to search like `samosa` in 'samosamosa is `true` & in `samosa` is also `true`.
+
+2. like : 
+   
+   ```js
+   search() {
+         const keyword = this.queryStr.keyword ? {
+            name: {
+               $regex: this.queryStr.keyword,// regex will match for keyword in the value of key `name`. ex 'samosa' in `samosamosa` is `true` & `samosa` in `samosa` is `true`
+               $options: "i",// case insensitive. by default it is case senstitve.
+            }
+         } : {}
+         console.log(keyword);
+         this.query = this.query.find({ ...keyword })
+         // at the end query me array of objects hai jo find() ka o/p hai.
+         return this;
+      }
+   ```
+   
+   <u>**So basically we are making a single API route (here `/products` - Get_All_Products) and generalising it so that it can also search for all products with some common search feature.**</u>
+
+> # ⚠
+> 
+> In `apiFeatures.js` file i wrote `module.export` instead of `module.exports` and got this e rror while making get to `/products` : `TypeError: API_Features is not a constructor`
+
+> # 📓 Sending `productModel.find()` while initialising API_Features class to this.query() but using `this.query.find()`, `.limit()`, `.sort()`
+> 
+> - `this.query` is intended to be a MongoDB query object, not a function.
+> 
+> - By calling `productModel.find()`, we create a Mongoose query object that represents a search for all documents in the `productModel` collection.
+> 
+> - `this.query` is not a function. It is an ***<u>instance of a Mongoose query object</u>***
+> 
+> - that provides methods like `find()`, `sort()`, `limit()`, and others for building and executing MongoDB queries.
+
+## Filter
+
+> ## 📓 First things first
+> 
+> ```js
+> queryCopy = { keyword: '2', category: 'Mobile' }
+> removeFields.forEach(key => delete queryCopy[key])
+> // then queryCopy = {category: 'Mobile'}
+> ```
+> 
+> When we pass query string like : 
+> 
+> `/products?category=laptop&price[gt]=2000&price[lt]=1000` 
+> 
+> then in express we get like : 
+> 
+> `{ category: 'laptop', price: { gt: '2000', lt: '1000' } }` 
+
+1. In `apiFeatures.js` create filter() in `API_Features`.
+
+2. Here we will implement filter functionality filtering out products based on the querystring request
+
+> ## 📓
+> 
+> Note that in productController.js I am writing like
+> 
+> ```js
+> const apiFeature = new
+>       API_Features(productModel.find(), req.query)
+>       .search()
+>       .filter();
+> ```
+> 
+> So how it is deciding what function to call : 
+> 
+> ```js
+> 1. apiFeature object is created as an instance of API_Features class
+> 2. `search()` method is invoked on the `apiFeature` object immediately after its creation, & returns current instance : `this` it allows `method chaining` by returning the same object.
+> 3. then the `filter()` method is invoked on the same `apiFeature` object. and the current instance this returned by it allowing further `method chaining`
+> 4. order of writing methods using the dot notation → order of method invocation.
+> ```
+> 
+> > Basically everytime both search and the filter functions are  called.
+
+## Pagination
+
+Will receive number of results per page as arg to provide only that amount of data.
+
+```js
+this.query =
+         this.query // it can be replaced with ProductModel.find() -> same effect
+            .limit(resultPerPage)
+            .skip(skip)
+```
+
+The `.skip()` function is a method provided by Mongoose to skip a specified number of documents when executing a query.
+
+`.limit()` allows us to define the maximum number of documents to return in the result set.
+
+By Using `.skip()` in combination with `.limit()`, we can have pagination functionality in Mongoose.
+
+```js
+Note that excessive use of `.skip()` on large collections can have performance implications, as it requires MongoDB to traverse and skip a large number of documents.
+In such cases, alternative pagination techniques like using the `lastId` approach or `cursor-based pagination` may be more efficient.
+```
+
+
+
+# Backend User & Password Authentication

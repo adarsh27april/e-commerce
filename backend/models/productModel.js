@@ -20,7 +20,7 @@ const ProductSchema = mongoose.Schema({
       default: 0
    },
    images: [
-      // since images will be array conaining multiple image denoted by many obj , each obj has public_id, url
+      // ∵ images will be array conaining multiple image denoted by many obj , each obj has public_id, url
       {
          public_id: {
             type: String,
