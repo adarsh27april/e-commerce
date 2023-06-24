@@ -11,6 +11,11 @@ const API_Features = require("../utils/apiFeatures")
 
 // POST - Create Product -Admin
 exports.createProduct = catchAsyncErrors(async (req, res, next) => {
+
+   req.body.user = req.user.id
+   // note that ∵ to come to createProduct route it will have to pass first to isAuthenticatedUser middleware
+   // which will provide the req.user the data of the user so here we will have access to it.
+
    const product = await productModel.create(req.body);
    console.log('product added successfully to DB :\n', product);
    res.status(201).json({
@@ -36,8 +41,9 @@ exports.getAllProducts = catchAsyncErrors(async (req, res, next) => {
    const products = await apiFeature.query;
    res.status(200).json({
       success: true,
-      message: `List of ${productCount} product(s) in DB`,
-      productCount,
+      message: `List of ${products.length} product(s) on this page`,
+      total_product_count: productCount,
+      page_num: Number(req.query.page),
       products
    })
 })

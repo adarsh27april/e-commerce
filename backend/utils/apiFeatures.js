@@ -2,6 +2,7 @@ class API_Features {
    constructor(query, queryStr) {
       this.query = query;
       this.queryStr = queryStr;
+      console.log("inside apiFeatures.js");
    }
 
    search() {
@@ -11,7 +12,7 @@ class API_Features {
             $options: "i",// case insensitive. by default it is case senstitve.
          }
       } : {}// keyword nahi hai to it will be empty and hence find function will return everything ∵ find() is same as find({}) in mongodb
-      console.log("from search(), keyword: ", keyword);
+      // console.log("from search(), keyword: ", keyword);
       this.query = this.query.find({ ...keyword })
       // at the end query me array of objects hai jo find() ka o/p hai.
       return this;
@@ -23,12 +24,12 @@ class API_Features {
       const removeFields = ["keyword", "page", "limit"];
       // keywords hm search me pehle hi le rhe hai
       // page kaun se page pe hai
-      console.log("from filter(), queryCopy: ", queryCopy);
+      // console.log("from filter(), queryCopy: ", queryCopy);
       removeFields.forEach(key => delete queryCopy[key])
 
       // Filter for price & rating
 
-      console.log(queryCopy);
+      // console.log(queryCopy);
       //initial : { category: 'laptop', price: { gt: '2000', lt: '1000' } }
 
       let queryStr = JSON.stringify(queryCopy);

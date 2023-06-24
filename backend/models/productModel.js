@@ -1,6 +1,6 @@
 const mongoose = require("mongoose")
 
-const ProductSchema = mongoose.Schema({
+const ProductSchema = new mongoose.Schema({
    name: {
       type: String,
       required: [true, "Please Enter Product Name"],// if no name entered then the second arg is the message to returned.
@@ -62,6 +62,11 @@ const ProductSchema = mongoose.Schema({
          }
       }
    ],
+   user: {
+      type: mongoose.Schema.ObjectId,
+      ref: "User",
+      required: true
+   },
    created_at: {
       type: Date,
       default: Date.now()

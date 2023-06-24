@@ -1,3 +1,7 @@
+---
+
+---
+
 # Starting with backend - 00:22:49
 
 - created seperate backend & frontend folders, inside backend app.js & server.js
@@ -346,6 +350,234 @@ Note that excessive use of `.skip()` on large collections can have performance i
 In such cases, alternative pagination techniques like using the `lastId` approach or `cursor-based pagination` may be more efficient.
 ```
 
-
-
 # Backend User & Password Authentication
+
+## User Model
+
+Import the validator model and create the User Schema and conver it model & export it..
+
+- minLength can be applied on password, name along with maxLength.
+
+- validator can be used to validate email like : validator.isEmail,
+
+- `unique : true` makes sure that the email provided is unique and returns error otherwise.
+
+Set the role with default value to be "user".
+
+## User Controller
+
+Create a basic  controller for register user which can create user with provided data, we will use bcrypt & everything else later.
+
+## User Router
+
+create `userRoute.js` in `routes` folder and direct `post` request at `/register` to that `registerUser()` controller.
+
+>  Then in `app.js` import the router from `userRoute.js` file and register it for `/api/v1` route like `productRoute` 
+
+note that in app.js we have written
+
+```js
+app.use("/api/v1", productRouter)
+app.use("/api/v1", userRouter)
+```
+
+Hence for every request of type `/api/v1/some/thing` it will go to both productRouter and figure out which was the controller that needs to be called.
+
+## Encrypting Password - bcryptjs
+
+We will be encrypting the password in the userModel.js file only.
+
+Import the `bcryptjs` package.
+
+> # 📓
+> 
+> ## we cannot use `this` keyword inside an arrow function `()=>{}`
+> 
+>  `userSchema.pre("save", funciton())` here `save` is an event and by using `pre` method provided by the `mongoose.Schema` we can add some functionality which will trigger just before saving the data into DB.
+
+## Setting up JWT Token
+
+Import `jsonwebtoken` in `userModel.js` file.
+
+>  Defining custom methods that can be called on instances of the model. here schemaName is userSchema and functionName is get_JWT_Token
+> 
+> ```js
+> schemaName.methods.functionName = function(){
+>     // function code here.
+> }
+> 
+> userSchema.methods.get_JWT_Token = function(){
+>     // function code here.
+> }
+> ```
+> 
+> These methods are specific to instances of the model here model is `User` and can be accessed and invoked on individual `user` objects.
+
+We will then  call the custom method `get_JWT_Token()` for every user instance in the `userController` in `registerUser` like :
+
+```js
+const user = await User.create(...)
+const token = user.get_JWT_Token()
+
+res.status(201).json({
+      success: true,
+      message: "User Created Success",
+      token
+   })
+```
+
+Then send the token in the response.
+
+In the config.env add the secret keys as : 
+
+```python
+PORT = 9876
+DB_URI='mongodb://localhost:27017/ecommerce'
+JWT_SECRET=thisIsMySceretKey_Adarsh
+JWT_EXPIRE=5d # this denotes 5 days
+```
+
+The <mark>restart</mark> the server and try making request.
+
+## Login User
+
+write a `loginUser` controller for `/login` route 
+
+* not providing email &/or password => 400 error
+
+* `const user = await User.findOne({ email }).select("+password");`
+  
+  will make sure that the email exsists and there is a hashed password for that email present in the DB.
+  
+  ```js
+  .select("+password"): method is used to specify the fields that should be included or excluded in the query results.
+  here, it is including the password field, which is typically marked with a leading `+` symbol to indicate that it should be selected.
+  ∵ in the userModel.js for password key we have mentioned `select : false`, ∴ it will not be included by default in `userModel.find()`
+  ```
+
+* if `!user` => 401 error
+
+* Generate `user.comparePassword(password)` custom method for the model in `userModel.js`
+- `userSchema.methods.comparePassword` will do a simple bcrypt.compare with the provided password & the hashed password, returning `true`/`false` at end.
+
+- ```js
+  const isPasswordMatched = await user.comparePassword(password);
+  don't forget await here.
+  Then based on the `isPasswordMatched` here we will provide error or JWT.
+  ```
+
+At this point we can see that we are writing the code repeateadly in the userRegister & userLogin
+
+```js
+const token = user.get_JWT_Token()
+   res.status(201).json({
+      success: true,
+      message: "User Created Success",
+      token
+   })
+```
+
+So we will create util for it. And also we need to save the token in the cookie after creating it.
+
+```js
+// sendToken.js
+const sendToken = (user, statusCode, message, res) => {
+   const token = user.get_JWT_Token();
+   // options for cookie.
+   const options = {
+      expires: new Date(
+         Date.now() + process.env.COOKIE_EXPIRE * 24 * 60 * 60 * 1000// in millissec
+      ),// it will set the expiry time for the cookie
+      httpOnly: true,
+   }
+   res.status(statusCode)
+      .cookie('token', token, options)
+      .json({
+         success: true,
+         message,
+         user,
+         token
+      })
+}
+module.exports = sendkToken;
+```
+
+## Adding Authentication to routes
+
+- In `app.js ` file import `cookie-parser` package and set up the middleware just after setting up `express.json`.
+
+- create `auth.js` in middleware 
+
+- the `isAuthenticatedUser` function will verify if the user is authenticated or not.
+
+- `req.cookies` contains an all the cookie as key-value pairs `{token : "token-cookie-value"}`
+  
+  ```js
+  const decodedData = jwt.verify(token, process.env.JWT_SECRET)
+  
+  `the jwt.verify() function will contain the token & the secret key, then`
+  
+  decodedData = { id: '648ec014168e35f1ef17ad5c', iat: 1687357764, exp: 1687789764 }
+  ```
+  
+  It contains the data that we provided(like id in `userModel.js` `get_JWT_Token` method) when creating the token using `jwt.sign()` method along with `iat(issued at)` & `exp(expiration time)` & can contain other info. like `iss(issuer)`& `sub(subject)`
+
+- Then add this function to the router like : 
+  
+  ```js
+  productRouter.route("/products").get(isAuthenticatedUser, getAllProducts);
+  ```
+  
+  > ## 📓
+  > 
+  > By writing this, the first function will exec. with args: req, res, next
+  > 
+  > Then the second function with exec. with same args
+  > 
+  > args will be provided by the express module.
+
+## Checking if role is Admin
+
+> First things first
+> 
+> **<u>Rest Parameter Syntax</u>**
+> 
+> ```js
+> function asdf(...args){
+>     console.log(args);
+> }
+> asdf("namaskar", "world);
+> // ['namaskar', 'world']
+> --------------------------------------------------------------
+> function qwerty(arg1, ...args){
+>     console.log(arg1);
+>     console.log(args);
+> }
+> qwerty(1,2,3,4,5,6,7,8);
+> // 1
+> // [2, 3, 4, 5, 6, 7, 8]
+> ```
+
+```js
+exports.authorizeRoles = (...roles) => {
+   /**
+    * here `...roles` in the parameter accepts a variable number of role arguments passed to it. 
+    * it doesnot provide the req, res, next, they are provided by the ExpressJS.
+    * the authorizeRoles function returns another function which is a express middleware,
+    * This middleware will check if the role of the user is matching the allowed role.
+    * if yes=> next() will pass control to next middleware or route handler.
+    * if no=> it will respond with an error or deny access to the requested user.
+    */
+   return (req, res, next) => {
+      if (!roles.includes(req.user.role)) {
+    // it will check if value of req.user.role is present in the roles (array - it will be array if multiple values are passed to it from calling function or else it will be a string)
+         return next(new ErrorHandler(`Role: '${req.user.role}' is not allowed to access this resource.`, 403));
+      }
+      next();
+   }
+}
+```
+
+
+
+## Implementing Forgot Password
