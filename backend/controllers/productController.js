@@ -50,8 +50,7 @@ exports.getAllProducts = catchAsyncErrors(async (req, res, next) => {
 
 // PUT - update Product - Admin
 exports.updateProduct = catchAsyncErrors(async (req, res, next) => {
-   const product = productModel.findById(req.params.id);
-   // My BLUNDER : using let instead of `const` for `product` then the var was somehow getting updated with some value.
+   let product = productModel.findById(req.params.id);
    console.log(req.params.id);
    // console.log(product);
    if (!product) {

@@ -44,7 +44,9 @@ const userSchema = new mongoose.Schema({
 userSchema.pre("save", async function (next) {
 
    if (!this.isModified("password")) {
-      // this condition will make sure that password will only be hashed if it's a new user or a pre-existing user is updating his `password`. if no password is being updated then it will prevent the already hashed password to be hashed repeatedly.
+      // this condition will make sure that password will only be hashed 
+      // if it's a new user or a pre-existing user is updating his `password`.
+      // if no update, => it will prevent the already hashed password to be hashed again.
       next();
    }
 
@@ -69,6 +71,25 @@ userSchema.methods.comparePassword = async function (enteredPassword) {
    // enteredPassword => what string is to be comapred
    // this.password => the encrypted string that is stored in DB.
    // return true/false
+}
+
+// Generating password Reset Token - after token generation we will send it via email to verify user and allow him to reset the password.
+userSchema.methods.getResetPasswordToken = function () {
+   const resetToken = crypto.randomBytes(20).toString('hex');
+
+   // hashing and adding to user data in DB.
+   this.resetPasswordToken =
+      crypto
+         .createHash("sha256")
+         .update(resetToken)
+         .digest("hex")
+
+   this.resetPasswordExpire = Date.now() + 15 * 60 * 1000// 15 minutes.
+   // note that at this point resetPasswordToken & resetPasswordExpire values 
+   // are added in the DB but it is not yet saved.
+   // so save it before using it.
+
+   return resetToken;
 }
 
 module.exports = new mongoose.model("User", userSchema);

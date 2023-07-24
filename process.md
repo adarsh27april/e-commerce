@@ -232,6 +232,52 @@ write the if block in the middleware in `error.js` like :
    }
 ```
 
+### MongoDB Duplicate key error
+
+This condition should be added after implementing the user registration, login
+
+```js
+// duplicate mongoDB Key Error
+   if (err.code === 11000) {
+      console.log(err)
+      const message = `Duplicate ${Object.keys(err.keyValue)} entered`
+      err = new ErrorHandler(message, 400)
+   }
+/* err object contains a lot of things out of which the requirements for here are : 
+  index: 0,
+  code: 11000,
+  keyPattern: { email: 1 },
+  keyValue: { email: 'asdf.admin@gmail.com' },
+  statusCode: 500,
+  [Symbol(errorLabels)]: Set(0) {}
+*/
+```
+
+If the duplicate key error occurred because a document with a duplicate email value was attempted to be inserted into the database, then err.keyValue will have an object as shown above.
+
+In this case, `Object.keys(err.keyValue)` would return an array with a single element, which is the field name `"email"`. The error message then gets constructed with this field name, providing more context to the developer or user about which field caused the duplication.
+
+
+### Wrong/Expired JWT Error
+
+These conditions should be added after implementing JWT 
+
+```js
+// wrong JWT error
+   if (err.name === "JsonWebTokenError") {// this error comes if the JWT token doesn't match
+      const message = `Json Web Token is Invalid, Try Again`
+      err = new ErrorHandler(message, 400)
+   }
+
+// JWT Expire Error
+   if (err.name === "TokenExpireError") {
+      const message = `Json Web Token is Expired, Try Again`
+      err = new ErrorHandler(message, 400)
+   }
+```
+
+
+
 # Search Filter Pagination
 
 1. create file `apiFeatures.js` in `utils` folder. Create class `API_Features`.
@@ -578,6 +624,160 @@ exports.authorizeRoles = (...roles) => {
 }
 ```
 
+## Implementing Forgot & Reset Password - pswd reset token, email, reset password
+
+Here we will be generating password Reset Token - after token generation we will send it via email to verify user and allow him to reset the password.
+
+```js
+userSchema.methods.getResetPasswordToken = function () {
+   const resetToken = crypto.randomBytes(20).toString('hex');
+
+   // hashing and adding to user data in DB.
+   this.resetPasswordToken =
+      crypto
+         .createHash("sha256")
+         .update(resetToken)
+         .digest("hex")
+
+   this.resetPasswordExpire = Date.now() + 15 * 60 * 1000// 15 minutes.
+   // note that at this point resetPasswordToken & resetPasswordExpire values 
+   // are added in the DB but it is not yet saved.
+   // so save it before using it.
+
+   return resetToken;
+}
+```
+
+create `forgotPassword` controller function in `userContoller.js` 
+
+### ForgotPassword controller : functionality for sending email
+
+Create `sendEmail` method in `backend/utils/sendEmail.js` file and import `nodemailer`.
+
+```js
+const nodemailer = require("nodemailer")
+
+const sendEmail = async (options) => {
+
+   const transporter = nodemailer.createTransport({
+      service: process.env.SMTP_SERVICE,// specifies the email service to be used
+      auth: {
+         user: process.env.SMPT_MAIL,// email id
+         pass: process.env.SMTP_PASSWORD// email password
+      }
+   })
+   const mailOptions = {
+      from: process.env.SMPT_MAIL,// kiski taraf se email bhejna hai
+      to: options.email,
+      subject: options.subject,
+      text: options.message
+   }
+   // the transporter object will be used to send the email with the email options
+   let a = await transporter.sendMail(mailOptions);
+   console.log(a);
+}
+module.exports = sendEmail
+
+```
+
+- https://www.youtube.com/watch?v=l--0JyIS5Ts  &rarr; for configuring app password in google account to be able to allow access to gmail to send emails.
 
 
-## Implementing Forgot Password
+
+Then create a  userController  `forgotPassword` and set to `/password/forgot` route in the userRoute
+
+Here a reset password token is generated and send via email to verify if user is who he claims to be.
+
+```js
+exports.forgotPassword = catchAsyncErrors(async (req, res, next) => {
+   const user = await User.findOne({ email: req.body.email });// await is necessary when using findOne function
+   console.log(user);
+   if (!user) {
+      return next(new ErrorHandler("User not found, check email", 404));
+   }
+
+   // get reset password token
+   const resetToken = user.getResetPasswordToken();
+   //here we are calling the function where resetPasswordToken & resetPasswordExpire are 
+   // added to db but not yet saved, so we will save it first
+   await user.save({ validateBeforeSave: false })
+
+   // now we will generate link which will be sent as mail to user for resetting the password.
+   const resetPasswordUrl = `${req.protocol}://${req.get("host")}/api/v1/password/reset/${resetToken}`
+   // for http://localhost:3000/asdf => req.get("host") = localhost:3000 & req.protocol = http
+
+   const message = `Your Password Reset Token is :- \n\n ${resetPasswordUrl} \n\n if you have not requested this email then please ignore it.`
+
+   try {
+
+      await sendEmail({
+         email: user.email,
+         subject: "E-commerce password recovery",
+         message
+      })
+
+      res.status(200).json({
+         success: true,
+         message: `Email sent to ${user.email} successfully`,
+      })
+
+   } catch (error) {
+      console.log("catch of forgot password controller", error);
+      // if some error occurs 
+      // first reset the resetPasswordToken & resetPasswordExpire values in DB to undefined 
+      // then save the user DB & return the error message.
+      user.resetPasswordToken = undefined;
+      user.resetPasswordExpire = undefined;
+      await user.save({ validateBeforeSave: false })
+      return next(new ErrorHandler(error.message, 500))
+   }
+
+})
+```
+
+
+
+### Reset Password
+
+Based upon the url containing the token that was sent to the user via email we will write an api for checkin the token and allowing the user to reset the password.
+
+create a `resetpassword`  contoller which will handle put request at route `/password/reset/:token` 
+
+```js
+// reset password
+exports.resetpassword = catchAsyncErrors(async (req, res, next) => {
+   // creating token hash
+   const resetPasswordToken =
+      crypto
+         .createHash("sha256")
+         .update(req.params.token)
+         .digest("hex")
+   // note that in the method getResetPasswordToken we are saving the hashed token
+   // so here we will convert the raw token to hash and then find in the db.
+
+   const user = await User.findOne({
+      resetPasswordToken,
+      resetPasswordExpire: { $gt: Date.now() }
+      // also compare the resetPasswordExpire if it greater than current time then okay or else it has expired
+   })
+
+   if (!user) {
+      return next(new ErrorHandler("reset password token is invalid or has expired", 400))
+   }
+
+   // if token is found and is not expired then check for the password and confirm password provided by the user
+   if (req.body.password !== req.body.confirmPassword) {
+      return next(new ErrorHandler("Passwords do not match", 400))
+   }
+
+   user.password = req.body.password;
+   user.resetPasswordToken = undefined;
+   user.resetPasswordExpire = undefined;
+
+   await user.save();
+   // note that there is a pre "save" function for hashing the password which will execute before saving in DB.
+
+   sendToken(user, 200, "User Password Reset Success", res);
+})
+
+```
