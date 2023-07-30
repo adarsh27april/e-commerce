@@ -6,12 +6,13 @@ const productRouter = express.Router();
 
 productRouter.route("/products").get(getAllProducts);
 
-productRouter.route('/product/new').post(isAuthenticatedUser, authorizeRoles("admin"), createProduct)
+productRouter.route('/admin/product/new').post(isAuthenticatedUser, authorizeRoles("admin"), createProduct)
 
-productRouter.route('/product/:id')
+productRouter.route('/admin/product/:id')
    .put(isAuthenticatedUser, authorizeRoles("admin"), updateProduct)
    .delete(isAuthenticatedUser, authorizeRoles("admin"), deleteProduct)
-   .get(getProductDetails)
 // ∵ the api-endpoint will be same for delete & update product.
+
+productRouter.route('/product/:id').get(getProductDetails)
 
 module.exports = productRouter;

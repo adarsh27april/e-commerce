@@ -55,6 +55,10 @@
 
 1. create database.js in config folder, the `connectDatabase()` function connects us to the DB, export it & import it into the **<mark>server.js</mark>** file after the line where dotenv is configured or else it wont get DB_URI.
 
+> ## 📓
+> 
+> In JavaScript, a Mongoose model is essentially a class that represents a MongoDB document and provides an interface for interacting with the database. Mongoose is an Object Data Modeling (ODM) library for MongoDB, which means it allows you to define schemas with strongly typed data, enforce validation rules, and create methods to perform CRUD (Create, Read, Update, Delete) operations on the documents.
+
 # Making Product API - 00:37:46
 
 1. Create Model folder inside backend 
@@ -257,7 +261,6 @@ If the duplicate key error occurred because a document with a duplicate email va
 
 In this case, `Object.keys(err.keyValue)` would return an array with a single element, which is the field name `"email"`. The error message then gets constructed with this field name, providing more context to the developer or user about which field caused the duplication.
 
-
 ### Wrong/Expired JWT Error
 
 These conditions should be added after implementing JWT 
@@ -275,8 +278,6 @@ These conditions should be added after implementing JWT
       err = new ErrorHandler(message, 400)
    }
 ```
-
-
 
 # Search Filter Pagination
 
@@ -582,7 +583,7 @@ module.exports = sendkToken;
   > 
   > args will be provided by the express module.
 
-## Checking if role is Admin
+## `authorizeRoles` middleware - Checking if role is Admin
 
 > First things first
 > 
@@ -677,12 +678,9 @@ const sendEmail = async (options) => {
    console.log(a);
 }
 module.exports = sendEmail
-
 ```
 
 - https://www.youtube.com/watch?v=l--0JyIS5Ts  &rarr; for configuring app password in google account to be able to allow access to gmail to send emails.
-
-
 
 Then create a  userController  `forgotPassword` and set to `/password/forgot` route in the userRoute
 
@@ -735,8 +733,6 @@ exports.forgotPassword = catchAsyncErrors(async (req, res, next) => {
 })
 ```
 
-
-
 ### Reset Password
 
 Based upon the url containing the token that was sent to the user via email we will write an api for checkin the token and allowing the user to reset the password.
@@ -779,5 +775,65 @@ exports.resetpassword = catchAsyncErrors(async (req, res, next) => {
 
    sendToken(user, 200, "User Password Reset Success", res);
 })
-
 ```
+
+# Backend User Routes APIs
+
+In this section we will handle requests like if user wants to fetch profile data, update password/profile, etc.
+
+ex : **<u>Get User Detail</u>**
+
+### Get User Detail
+
+here we will do auth first then allow this function to be triggered
+
+like : `router.route("/me").get(isAuthenticatedUser, getUserDetails);`
+
+```js
+exports.getUserDetails = catchAsyncErrors(async (req, res, next) => {
+   // const user = await User.findById(req.user.id);
+   // here we do not neet to find user by Id since user is already logged
+   //  in and hence the isAuthenticatedUser middleware will place all 
+   // the values of user in the req.user
+
+   //if (!user) {} => aisa ho hi nahi sakta ki user na mile kuki is route
+   // ko sirf wo user hi access kar sakta hai jo logged in hai
+   // if user is logged in then req.user me pura user aa jata hai
+
+   res.status(200).json({
+      success: true,
+      user: req.user
+   })
+})
+```
+
+### Update User Password
+
+```js
+exports.updatePassword = catchAsyncErrors(async (req, res, next) => {
+   const user = await User.findById(req.user.id).select("+password");
+
+   const isPasswordMatched = await user.comparePassword(req.body.oldPassword);
+   console.log(isPasswordMatched);
+   // comparePassword is a custom method that I created for the User model.
+   if (!isPasswordMatched) {
+      return next(new ErrorHandler("Old password is incorrect", 401));
+   }
+   if (req.body.newPassword !== req.body.confirmPassword) {
+      return next(new ErrorHandler("Passwords do not match", 401));
+   }
+   user.password = req.body.newPassword;
+   await user.save();
+   sendToken(user, 200, "Password Updated", res)
+})
+```
+
+Similarly for other operations like `Update User Profile`, `Get All Users-Admin`, `Get single User-Admin`, `Update User Role-Admin` and `Delete User-Admin` check `userController.js` file in code
+
+Some update in the route paths : 
+
+- Create Product `post` : `/product/new`(old) ⇒ `/admin/product/new`(new)
+
+- Update Product `put` : `/product/:id` (old) ⇒ `/admin/product/:id` (new)
+
+- Delete Product `delete` : `/product/:id` (old) ⇒ `/admin/product/:id` (new)
