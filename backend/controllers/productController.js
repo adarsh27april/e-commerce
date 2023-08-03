@@ -105,3 +105,100 @@ exports.getProductDetails = catchAsyncErrors(async (req, res, next) => {
       product
    })
 })
+
+
+// Create New Review or Update Review 
+exports.createUpdateProductReview = catchAsyncErrors(async (req, res, next) => {
+   // -> i.e., if a user is creating reviwe for first time then it will create review or else it will update the previous review
+   const { rating, comment, productId } = req.body
+   const review = {
+      user: req.user._id,
+      name: req.user.name,
+      rating: Number(rating),
+      comment, productId
+   }
+   const product = await productModel.findById(productId)
+   // it will return us an instance of what we have in the DB => this is allowed by the MONGOOSE package and not MONGODB.
+   // which we will update here and then when it is saved then the actual DB is updated.
+   const isReviewed = product.reviews.find(
+      (rev) => rev.user.toString() === req.user._id.toString()
+   )// NOTE THE SYNTAX, review is an array which has to be updated, WE ARE USING find() on the array just like that.
+   // use find or foreach
+   if (isReviewed) {
+      product.reviews.forEach(rev => {
+         if (rev.user.toString() === req.user._id.toString()) {
+            rev.rating = rating;
+            rev.comment = comment;
+         }
+      })
+   } else {
+      product.reviews.push(review)
+      product.num_of_reviews = product.reviews.length
+   }
+   let sum = 0
+   product.reviews.forEach(rev => {
+      sum += rev.rating
+   })
+   product.ratings = sum / product.reviews.length;// avg rating
+   await product.save({ validateBeforeSave: false })
+
+   res.status(200).json({
+      success: true,
+      message: isReviewed ? "Review Updated" : "Review Added"
+   })
+})
+
+// Get All Reviews of a single Product
+exports.getAllProductReviews = catchAsyncErrors(async (req, res, next) => {
+   const product = await productModel.findById(req.query.productId);
+
+   if (!product) {
+      return next(new ErrorHandler("Product Not found", 404))
+   }
+
+   res.status(200).json({
+      success: true,
+      message: `List of all ${product.num_of_reviews} reviews of the Product`,
+      reviews: product.reviews
+   })
+})
+
+// Delete Review
+exports.deleteProductReviews = catchAsyncErrors(async (req, res, next) => {
+   const product = await productModel.findById(req.query.productId);
+
+   if (!product) {
+      return next(new ErrorHandler("Product Not found", 404))
+   }
+
+   const reviews = product.reviews.filter(
+      // filter out the review to be deleted and keep only the not deletable reviews
+      (rev) => rev._id.toString() !== req.query.id.toString()
+   )
+
+   let ratings = 0;
+   if (reviews.length === 0) {
+      ratings = 0;
+   } else {
+      let sum = 0
+      reviews.forEach((rev) => {
+         sum += rev.rating
+      })
+      ratings = sum / reviews.length;
+   }
+
+   const num_of_reviews = reviews.length;
+
+   await productModel.findByIdAndUpdate(
+      req.query.productId,
+
+      { reviews, ratings, num_of_reviews },
+
+      { new: true, runValidators: true, useFindAndModify: false }
+   )
+
+   res.status(200).json({
+      success: true,
+      message: "Deleted the Review of the Product",
+   })
+})

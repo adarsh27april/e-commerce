@@ -837,3 +837,107 @@ Some update in the route paths :
 - Update Product `put` : `/product/:id` (old) ⇒ `/admin/product/:id` (new)
 
 - Delete Product `delete` : `/product/:id` (old) ⇒ `/admin/product/:id` (new)
+
+## Product Reviews
+
+#### Create Review
+
+Create `createUpdateProductReview` contorller in `productContorller.js` file if the user has already made a review then it will update it or else it will add a new review, and update the average rating.
+
+```js
+exports.createUpdateProductReview = catchAsyncErrors(async (req, res, next) => {
+   const { rating, comment, productId } = req.body
+   const review = {
+      user: req.user.id,
+      name: req.body.rating,
+      rating: Number(rating),
+      comment, productId
+   }
+   const product = await productModel.findById(productId)
+   // it will return us an instance of what we have in the DB => this is allowed by the MONGOOSE package and not MONGODB.
+   // which we will update here and then when it is saved then the actual DB is updated.
+   const isReviewed = product.reviews.find((rev) => {
+      // NOTE THE SYNTAX, review is an array which has to be updated, WE ARE USING find() on the array just like that.
+      if (rev.user.toString() === req.user._id.toString()) {
+         return;
+      }
+   }) // use find or foreach
+   if (isReviewed) {
+      product.reviews.forEach(rev => {
+         if (rev.user.toString() === req.user._id.toString()) {
+            rev.rating = rating;
+            rev.comment = comment;
+         }
+      })
+   } else {
+      product.reviews.push(review)
+      product.num_of_reviews = product.reviews.length
+   }
+   let avg = 0
+   product.ratings = product.reviews.forEach(rev => {
+      avg += rev.rating
+   }) / product.reviews.length
+   // avg rating
+   await product.save({ validateBeforeSave: false })
+
+   res.status(200).json({
+      success: true,
+      message: isReviewed ? "Review Updated" : "Review Added"
+   })
+})
+```
+
+#### Get All Reviews
+
+`getAllProductReviews` controller in the `productController.js` file and is accessible to all.
+
+#### Delete Review
+
+`deleteProductReviews` controller in the `productController.js` file and is accessible to only logged in users.
+
+Both `getAllProductReviews` & `productController.js` are available at the `get` and `delete` respectively at `/reviews` route, the product id and review id wil be passed to the controllers via the query string.
+
+```js
+// Delete Review
+exports.deleteProductReviews = catchAsyncErrors(async (req, res, next) => {
+   const product = await productModel.findById(req.query.productId);
+
+   if (!product) {
+      return next(new ErrorHandler("Product Not found", 404))
+   }
+
+   const reviews = product.reviews.filter(
+      // filter out the review to be deleted and keep only the not deletable reviews
+      (rev) => rev._id.toString() !== req.query.id.toString()
+   )
+
+   let ratings = 0;
+   if (reviews.length === 0) {
+      ratings = 0;
+   } else {
+      let sum = 0
+      reviews.forEach((rev) => {
+         sum += rev.rating
+      })
+      ratings = sum / reviews.length;
+   }
+
+   const num_of_reviews = reviews.length;
+
+   await productModel.findByIdAndUpdate(
+      req.query.productId,
+
+      { reviews, ratings, num_of_reviews },
+
+      { new: true, runValidators: true, useFindAndModify: false }
+   )
+
+   res.status(200).json({
+      success: true,
+      message: "Deleted the Review of the Product",
+   })
+})
+
+```
+
+At this point of time all of our User Routes End
