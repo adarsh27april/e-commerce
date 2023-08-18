@@ -994,3 +994,7 @@ Create orderSchema in orderModel.js file, orderController.js, and orderRoute.js 
 6. deleteOrder - Admin : 
    
    - Just delete the order from the DB and take no other action as of now, will update if some action needs to be taken
+
+
+
+🥳 🎉 !! Completed approx 90% Backend, moving to Frontend
