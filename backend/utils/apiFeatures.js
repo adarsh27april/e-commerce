@@ -2,7 +2,7 @@ class API_Features {
    constructor(query, queryStr) {
       this.query = query;
       this.queryStr = queryStr;
-      console.log("inside apiFeatures.js");
+      // console.log("inside apiFeatures.js");
    }
 
    search() {

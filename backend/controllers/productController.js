@@ -17,7 +17,7 @@ exports.createProduct = catchAsyncErrors(async (req, res, next) => {
    // which will provide the req.user the data of the user so here we will have access to it.
 
    const product = await productModel.create(req.body);
-   console.log('product added successfully to DB :\n', product);
+   // console.log('product added successfully to DB :\n', product);
    res.status(201).json({
       success: true,
       message: `Product created Successfully`,
@@ -199,6 +199,6 @@ exports.deleteProductReviews = catchAsyncErrors(async (req, res, next) => {
 
    res.status(200).json({
       success: true,
-      message: "Deleted the Review of the Product",
+      message: "Successfully Deleted review of the Product",
    })
 })

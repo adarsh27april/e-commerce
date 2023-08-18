@@ -49,7 +49,9 @@
    
    run the server to check it.
 
-8. Note that the Structure is like :  ![](https://developer.mozilla.org/en-US/docs/Learn/Server-side/Express_Nodejs/routes/mvc_express.png)so the controller will be controlling everything and providing it to the app.js
+8. Note that the Structure is like :  
+   
+   ![](https://developer.mozilla.org/en-US/docs/Learn/Server-side/Express_Nodejs/routes/mvc_express.png)     so the controller will be controlling everything and providing it to the app.js
 
 #### Configuring DB connection
 
@@ -98,7 +100,7 @@ We can create class and handle error there.
 
 1. Create a folder utils inside backend. then create errorHandle.js
 
-2. create js class ErrorHandler, note that in JS the name of classfirst letter is capital.
+2. create js class ErrorHandler, note that in JS first letter is capital in the name of class.
    
    ```js
    The given code defines a class called `ErrorHander`, which extends the built-in `Error` class in JavaScript. This class is designed to handle errors in a more structured and customizable way.
@@ -183,7 +185,7 @@ General Error handler instead of try catch block for async functions.
    })
    ```
    
-   It will basically look it the async function is executed or not and catch the errors encountered.
+   It will basically look if the async function is executed or not and catch the errors encountered.
 
 ### Unhandled Promise Rejection
 
@@ -934,10 +936,61 @@ exports.deleteProductReviews = catchAsyncErrors(async (req, res, next) => {
 
    res.status(200).json({
       success: true,
-      message: "Deleted the Review of the Product",
+      message: "Successfully Deleted review of the Product",
    })
 })
-
 ```
 
 At this point of time all of our User Routes End
+
+# Order APIs
+
+Create orderSchema in orderModel.js file, orderController.js, and orderRoute.js file and create the controller functions in the orderController.js file like it was done previously like : 
+
+1. newOrder
+
+2. getSingleorder - Admin : to get single order details only accessible to admin
+   
+   ```js
+   // get single order - Admin
+   exports.getSingleorder = catchAsyncErrors(async (req, res, next) => {
+      const order =
+         await orderModel
+            .findById(req.params.id)
+            .populate(
+               "user", // name of the model
+               "name email" // what fields are to be added
+            );
+   // `populate` => fetch user doc(ref. in mongoDB Schema) & replace the user field in 
+   // the order doc with the actual user document. The "name email" argument specifies
+   // that only name & email fields from the referenced user doc should be included.
+   
+      if (!order) {
+         return next(new ErrorHandler("Order not found for provided order id", 404))
+      }
+   
+      res.status(200).json({
+         success: true,
+         message: "Successfully found order",
+         order
+      })
+   })
+   ```
+
+3. myOrders : shows all the orders ordered by a single person
+
+4. getAllOrders - Admin : Sends Array of all the orders in the DB
+
+5. updateOrderStatus - Admin : 
+   
+   - Initial value is *Processing* for `orderModel.orderStatus` 
+   
+   - using this admin will be manually updating the status of the order by passing the order status from the frontend.
+   
+   - If this controller is triggered for a order then it means that the order status has to be changed to *Placed*, *Shipping*, *Delivered*  => hence, decrease the `stock` count of the product in the `ProductModel.stock` by amount `orderModel.OrderItems.quantity` , since this many num of `product` are ordered.
+   
+   - Simple code look at file.
+
+6. deleteOrder - Admin : 
+   
+   - Just delete the order from the DB and take no other action as of now, will update if some action needs to be taken

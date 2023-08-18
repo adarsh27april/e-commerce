@@ -1,7 +1,8 @@
 const ErrorHandler = require("../utils/errorHandler");
 
-module.exports = (err, req, res, next) => {
-   // the values of the err we are getting from m
+// https://docs.github.com/en/repositories/working-with-files/managing-files/renaming-a-file
+
+const errorMiddleware = (err, req, res, next) => {
    err.statusCode = err.statusCode || 500;
    err.message = err.message || "Internal Server Error";
 
@@ -36,3 +37,5 @@ module.exports = (err, req, res, next) => {
       error_stack: err.stack // we are getting this because of Error.captureStackTrace method.
    })
 }
+
+module.exports = errorMiddleware
