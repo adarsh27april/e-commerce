@@ -3,6 +3,10 @@ import React from 'react'
 import cgmouse from "../assets/images/cgmouse.svg"
 import "./Home.css"
 import Product from "./Product.jsx"
+// import Metadata from './layout/Metadata'
+import { useGetAllProductsQuery } from '../redux/slices/productApiSlice'
+import Loader from './layout/Loader/Loader'
+import Alert from './layout/Alert/Alert'
 
 const product = {
    name: "Blue T-Shirt",
@@ -13,25 +17,33 @@ const product = {
 }
 
 const Home = () => {
-   return (<>
-      <div className="banner">
-         <p>Welcome to MERN e-Commerce</p>
-         <h1>Find Amazing Products below</h1>
-         <a href="#container"><button>Scroll <img src={cgmouse} /> </button></a>
-      </div>
-      <h2 className="homeHeading">Featured Products</h2>
 
-      <div className="container" id="container">
-         <Product product={product} />
-         <Product product={product} />
-         <Product product={product} />
-         <Product product={product} />
-         <Product product={product} />
-         <Product product={product} />
-         <Product product={product} />
-         <Product product={product} />
-      </div>
-   </>)
+   const { data, isLoading, isError, isFetching, isSuccess, error } = useGetAllProductsQuery("");
+   console.log(data, isLoading, isError, isFetching, isSuccess, error);
+
+   return (
+      <>
+         {isError && <Alert type='error' message={error.error} />}
+
+         {isLoading ? <div><Loader /></div> :
+            <>
+               <div className="banner">
+                  <p>Welcome to MERN e-Commerce</p>
+                  <h1>Find Amazing Products below</h1>
+                  <a href="#container"><button>Scroll <img src={cgmouse} /> </button></a>
+               </div>
+               <h2 className="homeHeading">Featured Products</h2>
+
+               <div className="container" id="container">
+
+                  {
+                     data?.products.map((item, index) => <Product product={item} key={index} />)
+                  }
+                  {/* <Product product={product} /> */}
+
+               </div>
+            </>}
+      </>)
 }
 
 export default Home

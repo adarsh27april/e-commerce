@@ -1,0 +1,56 @@
+.alert-parent {
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   font-family: Roboto;
+   z-index: 100;
+}
+
+.alert-box {
+   position: fixed;
+   bottom: 2vmax;
+   border-radius: 1.2vmax;
+   border: 1.7px solid;
+   box-shadow: 4 4 50px rgba(15, 15, 15, 0.26);
+}
+
+.alert-content {
+   display: flex;
+   align-items: center;
+   padding: 1.2vmax;
+}
+
+.alert-message {
+   font-size: 1.6vmax;
+   margin: 0 2vmax
+}
+
+.FaXmark {
+   margin: auto 0;
+   cursor: pointer;
+   opacity: 0.8, ;
+   /* color: 'white'; */
+
+}
+
+.progress-line-parent {
+   height: 1.3px;
+   position: relative;
+   bottom: 0.6vmax;
+   width: 90%
+}
+
+.progress-line {
+   height: 100%;
+   margin: auto 1vmax;
+}
+
+@keyframes progress_Fill_Animate {
+   0% {
+      width: 0%
+   }
+
+   100% {
+      width: 100%
+   }
+}
