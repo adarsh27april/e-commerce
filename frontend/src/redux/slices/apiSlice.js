@@ -6,6 +6,7 @@ const baseQuery = fetchBaseQuery({ baseUrl: baseURL });
 export const apiSlice = createApi({
    baseQuery,
    tagTypes: ["User", "Products", "Product"],
+   // based upon this tags we will update the cached data of whatever is stored 
    endpoints: (builder) => ({}),
 })
 

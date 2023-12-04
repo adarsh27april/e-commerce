@@ -2,3 +2,23 @@
    margin: 0;
    scroll-behavior: smooth;
 }
+
+/* Chrome, Safari, Edge, Opera - up & down value changing button*/
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+   -webkit-appearance: none;
+   margin: 0;
+}
+
+/* Firefox - up & down value changing button*/
+input[type="number"] {
+   -moz-appearance: textfield;
+}
+
+.greenColor {
+   color: green !important;
+}
+
+.redColor {
+   color: red !important;
+}
