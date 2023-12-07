@@ -5,9 +5,9 @@ import WebFont from 'webfontloader';
 import React, { useEffect } from 'react';
 import Footer from "./component/layout/footer/Footer.jsx"
 import Home from "./component/Home.jsx"
+import ProductDetails from './component/Product/ProductDetails';
 import Loader from './component/layout/Loader/Loader';
 import Alert from './component/layout/Alert/Alert.jsx';
-import ProductDetails from './component/Product/ProductDetails';
 import My_custom_carousel from './component/layout/Carousel/My_custom_carousel';
 
 
@@ -27,7 +27,6 @@ function App() {
 			<Routes>
 				<Route exact path="/" element={<Home />} />
 				<Route exact path="/product/:id" element={<ProductDetails />} />
-				<Route path="/carousel" element={<My_custom_carousel />} />
 			</Routes>
 
 			<Footer />

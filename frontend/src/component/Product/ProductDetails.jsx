@@ -16,57 +16,10 @@ const ProductDetails = ({ match }) => {
 
    console.log(data, isLoading, isError, isFetching, isSuccess, error);
    const [Images, setImages] = useState([])
-   const WidowWidth = window.innerWidth;
-   // const [WidowWidth, setWidowWidth] = useState(window.innerWidth);
-   // const imgArr = [
-   //    {
-   //       original: "https://rukminim2.flixcart.com/image/416/416/k4u7i4w0/headphone/f/x/2/infinity-glide-501-original-imafnnem27b5h3dv.jpeg",
-   //       thumbnail: "https://rukminim2.flixcart.com/image/416/416/k4u7i4w0/headphone/f/x/2/infinity-glide-501-original-imafnnem27b5h3dv.jpeg",
-   //    },
-   //    {
-   //       original: "https://rukminim2.flixcart.com/image/416/416/k4u7i4w0/headphone/f/x/2/infinity-glide-501-original-imafnnemz9nghmh6.jpeg",
-   //       thumbnail: "https://rukminim2.flixcart.com/image/416/416/k4u7i4w0/headphone/f/x/2/infinity-glide-501-original-imafnnemz9nghmh6.jpeg",
-   //    },
-   //    {
-   //       original: "https://rukminim2.flixcart.com/image/416/416/k4u7i4w0/headphone/f/x/2/infinity-glide-501-original-imafnnemehdhbdts.jpeg",
-   //       thumbnail: "https://rukminim2.flixcart.com/image/416/416/k4u7i4w0/headphone/f/x/2/infinity-glide-501-original-imafnnemehdhbdts.jpeg",
-   //    },
-   //    {
-   //       original: "https://rukminim2.flixcart.com/image/416/416/k4u7i4w0/headphone/f/x/2/infinity-glide-501-original-imafnnem6npt9gjh.jpeg",
-   //       thumbnail: "https://rukminim2.flixcart.com/image/416/416/k4u7i4w0/headphone/f/x/2/infinity-glide-501-original-imafnnem6npt9gjh.jpeg",
-   //    },
-   //    {
-   //       original: "https://rukminim2.flixcart.com/image/416/416/k4u7i4w0/headphone/f/x/2/infinity-glide-501-original-imafnnemjxnmzcdu.jpeg",
-   //       thumbnail: "https://rukminim2.flixcart.com/image/416/416/k4u7i4w0/headphone/f/x/2/infinity-glide-501-original-imafnnemjxnmzcdu.jpeg",
-   //    },
-   //    {
-   //       original: "https://rukminim2.flixcart.com/image/416/416/k4u7i4w0/headphone/f/x/2/infinity-glide-501-original-imafnnemhabfszgk.jpeg",
-   //       thumbnail: "https://rukminim2.flixcart.com/image/416/416/k4u7i4w0/headphone/f/x/2/infinity-glide-501-original-imafnnemhabfszgk.jpeg",
-   //    },
-   //    {
-   //       original: "https://rukminim2.flixcart.com/image/416/416/k4u7i4w0/headphone/f/x/2/infinity-glide-501-original-imafnnemhabfszgk.jpeg",
-   //       thumbnail: "https://rukminim2.flixcart.com/image/416/416/k4u7i4w0/headphone/f/x/2/infinity-glide-501-original-imafnnemhabfszgk.jpeg",
-   //    },
-   //    {
-   //       original: "https://rukminim2.flixcart.com/image/416/416/k4u7i4w0/headphone/f/x/2/infinity-glide-501-original-imafnnemhfz4w6ru.jpeg",
-   //       thumbnail: "https://rukminim2.flixcart.com/image/416/416/k4u7i4w0/headphone/f/x/2/infinity-glide-501-original-imafnnemhfz4w6ru.jpeg",
-   //    },
-   //    {
-   //       original: "https://rukminim2.flixcart.com/image/416/416/k4u7i4w0/headphone/f/x/2/infinity-glide-501-original-imafnnemktvpgjgj.jpeg",
-   //       thumbnail: "https://rukminim2.flixcart.com/image/416/416/k4u7i4w0/headphone/f/x/2/infinity-glide-501-original-imafnnemktvpgjgj.jpeg",
-   //    }
-   // ]
    useEffect(() => {
-      if (isSuccess) {
-         let imgs = []
+      if (isSuccess)
          setImages(data?.product.images)
-         // console.log(data?.product.images);
-         // data?.product.images.map((item) => imgs.push({ original: item.url, thumbnail: item.url }))
-         // setImages(imgs)
-      }
    }, [data])
-   console.log(Images);
-   // console.log(imgArr);
 
    return (<>
       {isError && <Alert type='error' message={error.error} />}
@@ -74,8 +27,8 @@ const ProductDetails = ({ match }) => {
       {isLoading && <Loader />}
       {isSuccess && <>
          <div className="ProductDetails">
-
-            <My_custom_carousel imgSrcArr={Images} />
+            <My_custom_carousel arrowColor={"crimson"} imgSrcArr={Images} carouselImgMaxHeight={"35vh"} />
+            {/* <My_custom_carousel arrowColor={"crimson"} /> */}
 
             <div>
                <div className="detailsBlock-1">
@@ -111,7 +64,6 @@ const ProductDetails = ({ match }) => {
                <button className="submitReview">Submit Review</button>
             </div>
          </div>
-
 
          <h3 className='reviewsHeading'>REVIEWS</h3>
          {

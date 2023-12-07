@@ -20,14 +20,10 @@ const RightArrow = () => {
       </svg>
    )
 }
-const My_custom_carousel = ({ imgSrcArr = [
-   "https://res.cloudinary.com/dttl1hovl/image/upload/v1697894484/resized_2_x7phbt.jpg",
-   "https://res.cloudinary.com/dttl1hovl/image/upload/v1697894514/GoddessDurga_jf2rgk.webp",
-   "https://res.cloudinary.com/dttl1hovl/image/upload/v1697894450/resized_meskb3.png",
-   "https://res.cloudinary.com/dttl1hovl/image/upload/v1697893983/copymultiverse-spider-man-no-way-home-artwork-u1nvqt1zhrzpvx3y_xnymsu.jpg",
-   "https://res.cloudinary.com/dttl1hovl/image/upload/v1697893872/4_on91xj.jpg",
-] }) => {
 
+const My_custom_carousel = ({
+   arrowColor = "#fff", carouselImgMaxHeight = '100%', imgSrcArr
+}) => {
 
    const [currentIndex, setcurrentIndex] = useState(0);
    const [touchStartX, setTouchStartX] = useState(null);
@@ -40,8 +36,7 @@ const My_custom_carousel = ({ imgSrcArr = [
       setcurrentIndex(newIndex);
    }
 
-   function handleTouchStart(e) {
-      // console.log(e); -> touch event
+   function handleTouchStart(e) { // e -> touch event
       setTouchStartX(e.touches[0].clientX); // the X coordinate of the touch point
    }
    function handleTouchMove(e) {
@@ -77,7 +72,7 @@ const My_custom_carousel = ({ imgSrcArr = [
    }, [currentIndex])
 
    return (
-      <div className="section">
+      <div>
          <div className="carousel-container"
             onTouchStart={handleTouchStart} //A finger is placed on a touch screen
             onTouchMove={handleTouchMove} // A finger is dragged across the screen
@@ -85,17 +80,17 @@ const My_custom_carousel = ({ imgSrcArr = [
          >
             <div className="carousel" ref={carousel}>
                {imgSrcArr.map((item, i) =>
-                  <img src={item} alt={`image ${i}`} key={`img ${i}`}
-                     onError={(e) => {
-                        e.target.alt = `Img fail to load : ${e.target.alt}`
-                     }}
-                  />
+                  <div key={`img ${i}`} style={{ maxHeight: carouselImgMaxHeight }}>
+                     <img src={item.url} alt={`image ${i}`}
+                        onError={(e) => { e.target.alt = `Img fail to load : ${e.target.alt}` }}
+                     />
+                  </div>
                )}
             </div>
-            <button className="prev-button" onClick={() => showImage(-1)}>
+            <button className="prev-button" onClick={() => showImage(-1)} style={{ color: arrowColor }}>
                <LeftArrow />
             </button>
-            <button className="next-button" onClick={() => showImage(1)}>
+            <button className="next-button" onClick={() => showImage(1)} style={{ color: arrowColor }}>
                <RightArrow />
             </button>
             <div className="dots">
