@@ -25,7 +25,7 @@ https://www.traversymedia.com/blog/mern-crash-course-part-2
 
 https://redux.js.org/tutorials/essentials/part-7-rtk-query-basics
 
-Create a folder `redux` in the src of Frontend.
+Create a folder `redux` in the `src` of Frontend.
 
 Create `store.js` and configure it.
 ref : https://redux.js.org/introduction/why-rtk-is-redux-today#what-does-redux-toolkit-do
@@ -35,4 +35,4 @@ ref : https://www.traversymedia.com/blog/mern-crash-course-part-2
  - Create `apiSlice.js` & `productApiSlice.js`
  - inside endpoints in `productApiSlice.js` create the builder query(for GET req) or mutation(for POST, PUT, DELETE reqs.) functions.
  - For everyEndpoint we will have access to a hook by name of  say useGetAllProductsQuery for endpoint say getAllProducts. this hook will be used in `Home.jsx` component and will provide access to the states like : 
-   > `data`, `isLoading`, `isError`, `isFetching`, `isSuccess` using them we can display daat on the components
+   > `data`, `isLoading`, `isError`, `isFetching`, `isSuccess` using them we can display data on the components

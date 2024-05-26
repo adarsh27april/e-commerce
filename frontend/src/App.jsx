@@ -9,6 +9,8 @@ import ProductDetails from './component/Product/ProductDetails';
 import Loader from './component/layout/Loader/Loader';
 import Alert from './component/layout/Alert/Alert.jsx';
 import My_custom_carousel from './component/layout/Carousel/My_custom_carousel';
+import Products from "./component/Product/Products.jsx";
+import Search from "./component/Product/Search.jsx";
 
 
 function App() {
@@ -27,6 +29,8 @@ function App() {
 			<Routes>
 				<Route exact path="/" element={<Home />} />
 				<Route exact path="/product/:id" element={<ProductDetails />} />
+				<Route exact path="/products" element={<Products />} />{/*products route from the */}
+				<Route exact path="/search" element={Search} />
 			</Routes>
 
 			<Footer />

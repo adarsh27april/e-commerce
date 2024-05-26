@@ -1,3 +1,39 @@
+- [Starting with backend - 00:22:49](#starting-with-backend---002249)
+  - [Backend folder Setup](#backend-folder-setup)
+      - [Configuring DB connection](#configuring-db-connection)
+- [Making Product API - 00:37:46](#making-product-api---003746)
+- [Backend Error Handling](#backend-error-handling)
+    - [For Product Not found](#for-product-not-found)
+    - [Aync Func. try catch block](#aync-func-try-catch-block)
+    - [Unhandled Promise Rejection](#unhandled-promise-rejection)
+    - [Handling Uncaught Exception](#handling-uncaught-exception)
+    - [Wrong MongoDB ID error - CastError](#wrong-mongodb-id-error---casterror)
+    - [MongoDB Duplicate key error](#mongodb-duplicate-key-error)
+    - [Wrong/Expired JWT Error](#wrongexpired-jwt-error)
+- [Search Filter Pagination](#search-filter-pagination)
+  - [Search Feature](#search-feature)
+  - [Filter](#filter)
+  - [Pagination](#pagination)
+- [Backend User \& Password Authentication](#backend-user--password-authentication)
+  - [User Model](#user-model)
+  - [User Controller](#user-controller)
+  - [User Router](#user-router)
+  - [Encrypting Password - bcryptjs](#encrypting-password---bcryptjs)
+  - [Setting up JWT Token](#setting-up-jwt-token)
+  - [Login User](#login-user)
+  - [Adding Authentication to routes](#adding-authentication-to-routes)
+  - [`authorizeRoles` middleware - Checking if role is Admin](#authorizeroles-middleware---checking-if-role-is-admin)
+  - [Implementing Forgot \& Reset Password - pswd reset token, email, reset password](#implementing-forgot--reset-password---pswd-reset-token-email-reset-password)
+    - [ForgotPassword controller : functionality for sending email](#forgotpassword-controller--functionality-for-sending-email)
+    - [Reset Password](#reset-password)
+- [Backend User Routes APIs](#backend-user-routes-apis)
+    - [Get User Detail](#get-user-detail)
+    - [Update User Password](#update-user-password)
+  - [Product Reviews](#product-reviews)
+      - [Create Review](#create-review)
+      - [Get All Reviews](#get-all-reviews)
+      - [Delete Review](#delete-review)
+- [Order APIs](#order-apis)
 ---
 
 ---
@@ -995,6 +1031,8 @@ Create orderSchema in orderModel.js file, orderController.js, and orderRoute.js 
    
    - Just delete the order from the DB and take no other action as of now, will update if some action needs to be taken
 
+
+>> Add `cors()` middleware to prevent cors errors
 
 
 🥳 🎉 !! Completed approx 90% Backend, moving to Frontend

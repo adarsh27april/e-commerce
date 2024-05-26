@@ -3,9 +3,9 @@ import { Link } from "react-router-dom"
 import { Rating } from '@smastrom/react-rating'
 import '@smastrom/react-rating/style.css'
 
-const Product = ({ product }) => {
+const ProductCard = ({ product }) => {
    return (<>
-      <Link className='productCard' to={`product/${product._id}`}>
+      <Link className='productCard' to={`/product/${product._id}`}>
          <img src={product.images[0].url} alt={product.name} loading='lazy' />
          <p>{product.name}</p>
          <div>
@@ -17,4 +17,4 @@ const Product = ({ product }) => {
    </>)
 }
 
-export default Product
+export default ProductCard

@@ -2,7 +2,7 @@ import React from 'react'
 // import { CgMouse } from "react-icons/all"
 import cgmouse from "../assets/images/cgmouse.svg"
 import "./Home.css"
-import Product from "./Product.jsx"
+import ProductCard from "./ProductCard.jsx"
 // import Metadata from './layout/Metadata'
 import { useGetAllProductsQuery } from '../redux/slices/productApiSlice'
 import Loader from './layout/Loader/Loader'
@@ -37,9 +37,9 @@ const Home = () => {
                <div className="container" id="container">
 
                   {
-                     data?.products.map((item, index) => <Product product={item} key={index} />)
+                     data?.products.map((item, index) => <ProductCard product={item} key={index} />)
                   }
-                  {/* <Product product={product} /> */}
+                  {/* <ProductCard product={product} /> */}
 
                </div>
             </>}
