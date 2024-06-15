@@ -1,5 +1,7 @@
 ## Structure of config.env
 
+create config.env file in `backend/config/config.env`
+
 ```bash
 PORT = 9876
 DB_URI='mongodb://localhost:27017/ecommerce'
